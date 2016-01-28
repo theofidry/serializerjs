@@ -26,11 +26,10 @@ describe('SerializerInterface', () => {
         const serializer = new SerializerInterface();
 
         // Potential refactor
-        // @see https://github.com/chaijs/chai/issues/596
-        assert.throw(serializer.deserialize, Error);
-        assert.throw(serializer.serialize, Error);
-        assert.throw(serializer.supportsDeserialize, Error);
-        assert.throw(serializer.supportsSerialize, Error);
+        assert.throw(serializer.deserialize, UnimplementedMethodError);
+        assert.throw(serializer.serialize, UnimplementedMethodError);
+        assert.throw(serializer.supportsDeserialize, UnimplementedMethodError);
+        assert.throw(serializer.supportsSerialize, UnimplementedMethodError);
 
         try {
             serializer.deserialize();
