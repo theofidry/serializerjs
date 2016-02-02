@@ -72,3 +72,28 @@ gulp.task('minify', () => {
         .pipe(gulp.dest('./dist'))
     ;
 });
+
+gulp.task('benchmark', () => {
+    gulp
+        .src('benchmark/Fixtures/app.js')
+        .pipe(babel())
+        .pipe(gulp.dest('benchmark'))
+    ;
+
+    const stream = browserify({
+              builtins: {
+                  _process: true,
+              },
+              entries: 'benchmark/app.js',
+              standalone: 'app',
+          })
+        .bundle()
+    ;
+
+    return stream
+        .pipe(source('app.js'))
+        .pipe(derequire())
+        .pipe(insert.prepend(COPYRIGHT))
+        .pipe(gulp.dest('./benchmark'))
+        ;
+});

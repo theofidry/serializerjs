@@ -8,6 +8,7 @@
  */
 
 import SerializerAware from './SerializerAware';
+import SerializerFinder from './../Finder/SerializerFinder';
 import SerializerInterface from './SerializerInterface';
 import SerializationError from './../Error/SerializationError';
 import InvalidArgumentError from './../Error/InvalidArgumentError';
@@ -23,11 +24,12 @@ import InvalidArgumentError from './../Error/InvalidArgumentError';
 export default class Serializer extends SerializerInterface {
     /**
      * @param {Map.<string,SerializerInterface>} serializers
+     * @param {?SerializerFinder}                [serializerFinder=null]
      *
      * @throw InvalidArgumentError
      */
-    constructor(serializers) {
-        super(serializers);
+    constructor(serializers, serializerFinder = null) {
+        super();
 
         for (const serializer of serializers.values()) {
             if (false === serializer instanceof SerializerInterface) {
@@ -46,13 +48,21 @@ export default class Serializer extends SerializerInterface {
          * @private
          */
         this._serializers = serializers;
+
+        /**
+         * @type {{serializer: SerialiazerFinder}}
+         * @private
+         */
+        this._finders = {
+            serializer: (serializerFinder === null) ? new SerializerFinder() : serializerFinder,
+        };
     }
 
     /**
      * @inheritDoc
      */
     serialize(data, format, context) {
-        const serializer = this._getSerializerForSerialization(data, format);
+        const serializer = this._finders.serializer.find(this._serializers.values(), data, format);
         if (null !== serializer) {
             return serializer.serialize(data, format, context);
         }
@@ -64,7 +74,7 @@ export default class Serializer extends SerializerInterface {
      * @inheritDoc
      */
     supportsSerialize(data, format = null) {
-        return null !== this._getSerializerForSerialization(data, format);
+        return null !== this._finders.serializer.find(this._serializers.values(), data, format);
     }
 
     /**
@@ -87,29 +97,12 @@ export default class Serializer extends SerializerInterface {
     }
 
     /**
-     * @param {*}       data          Any data
-     * @param {?string} [format=null] Format the normalization result will be encoded as
-     *
-     * @return {?SerializerInterface}
-     * @private
-     */
-    _getSerializerForSerialization(data, format = null) {
-        for (const serializer of this._serializers.values()) {
-            if (true === serializer.supportsSerialize(data, format)) {
-                return serializer;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param {*}       data          Data to restore
      * @param {string}  className     The expected class to instantiate
      * @param {?string} [format=null] Format the given data was extracted from
      *
      * @return {?SerializerInterface}
-     * @private
+     * @protected
      */
     _getSerializerForDeserialization(data, className, format = null) {
         for (const serializer of this._serializers.values()) {
