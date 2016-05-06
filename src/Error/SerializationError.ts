@@ -7,20 +7,10 @@
  * file that was distributed with this source code.
  */
 
-import SerializerError from './SerializerError';
-
 /**
  * Error thrown upon (de-)serialization process.
  *
  * @author Théo FIDRY <theo.fidry@gmail.com>
  */
-export default class SerializationError extends SerializerError {
-    /**
-     * @param {string} [message='']
-     */
-    constructor(message = '') {
-        super(message);
-
-        this.name = 'SerializationError';
-    }
+export default class SerializationError extends Error {
 }
